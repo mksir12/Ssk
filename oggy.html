@@ -149,14 +149,14 @@
       z-index: 9999;
       background: #00aaff;
       border: none;
-      padding: 10px 16px;
+      padding: 6px 10px;
       border-radius: 12px;
       color: black;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 14px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 4px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
 
@@ -165,8 +165,8 @@
     }
 
     #musicControl img {
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
     }
         
         .quality-selector {
@@ -343,11 +343,11 @@
 
     const updateButton = () => {
       if (audio.paused) {
-        icon.src = "https://cdn-icons-png.flaticon.com/512/727/727245.png"; // ▶️ play
+        icon.src = "https://img.icons8.com/?size=100&id=undefined&format=png&color=000000"; // ▶️ play
         icon.alt = "play";
         label.textContent = "Play Music";
       } else {
-        icon.src = "https://cdn-icons-png.flaticon.com/512/727/727239.png"; // ⏸️ pause
+        icon.src = "https://img.icons8.com/?size=100&id=91470&format=png&color=000000"; // ⏸️ pause
         icon.alt = "pause";
         label.textContent = "Pause Music";
       }
