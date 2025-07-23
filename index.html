@@ -304,12 +304,8 @@
     </footer>
 
     <script>
-  document.addEventListener('click', () => {
-    const audio = document.getElementById('bgAudio');
-    if (audio.paused) {
-      audio.play().catch(err => console.log('Autoplay blocked:', err));
-    }
-  }, { once: true });
+const successSound = document.getElementById('successSound');
+                successSound.play().catch(e => console.log("Audio play failed:", e));
 </script>
     
     <script>
