@@ -152,9 +152,6 @@
     </style>
 </head>
 <body class="min-h-screen bg-gray-50">
-    
-    <audio id="successSound" src="https://ar-hosting.pages.dev/1753288224398.mp3" autoplay preload="auto"></audio>
-    
     <!-- Header with Instagram Logo -->  
     <nav class="bg-white shadow-sm py-4">
         <div class="container mx-auto px-4 flex items-center justify-between">
@@ -303,9 +300,19 @@
         </div>
     </footer>
 
-    <script>
-const successSound = document.getElementById('successSound');
-                successSound.play().catch(e => console.log("Audio play failed:", e));
+    <audio id="successSound" src="https://ar-hosting.pages.dev/1753288224398.mp3" preload="auto"></audio>
+
+<script>
+  window.addEventListener('load', () => {
+    const audio = document.getElementById('successSound');
+    audio.muted = false;
+    audio.play().catch(err => {
+      console.log('Autoplay with sound blocked. Waiting for click...');
+      document.addEventListener('click', () => {
+        audio.play();
+      }, { once: true });
+    });
+  });
 </script>
     
     <script>
