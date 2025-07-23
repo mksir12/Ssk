@@ -147,23 +147,26 @@
       bottom: 20px;
       right: 20px;
       z-index: 9999;
-      background: black;
-      border: 2px solid #00f7ff;
+      background: #00aaff;
+      border: none;
       padding: 10px 16px;
       border-radius: 12px;
-      color: white;
+      color: black;
       cursor: pointer;
       font-size: 16px;
-      text-shadow: 0 0 5px #0ff;
-      box-shadow:
-        0 0 5px #0ff,
-        0 0 10px #0ff,
-        0 0 20px #0ff;
-      transition: background 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
 
     #musicControl:hover {
-      background: #222;
+      background: #0090dd;
+    }
+
+    #musicControl img {
+      width: 20px;
+      height: 20px;
     }
         
         .quality-selector {
@@ -176,7 +179,6 @@
     </style>
 </head>
 <body class="min-h-screen bg-gray-50">
-  <button id="musicControl">Pause</button>
     <!-- Header with Instagram Logo -->  
     <nav class="bg-white shadow-sm py-4">
         <div class="container mx-auto px-4 flex items-center justify-between">
@@ -327,29 +329,47 @@
 
     <audio id="successSound" src="https://ar-hosting.pages.dev/1753288224398.mp3" preload="auto"></audio>
 
-<script>
+    <!-- Button -->
+  <button id="musicControl">
+    <img id="musicIcon" src="https://cdn-icons-png.flaticon.com/512/727/727239.png" alt="pause"/>
+    <span>Pause Music</span>
+  </button>
+
+  <script>
     const audio = document.getElementById('successSound');
     const btn = document.getElementById('musicControl');
+    const icon = document.getElementById('musicIcon');
+    const label = btn.querySelector('span');
+
+    const updateButton = () => {
+      if (audio.paused) {
+        icon.src = "https://cdn-icons-png.flaticon.com/512/727/727245.png"; // ▶️ play
+        icon.alt = "play";
+        label.textContent = "Play Music";
+      } else {
+        icon.src = "https://cdn-icons-png.flaticon.com/512/727/727239.png"; // ⏸️ pause
+        icon.alt = "pause";
+        label.textContent = "Pause Music";
+      }
+    };
 
     btn.addEventListener('click', () => {
       if (audio.paused) {
         audio.play();
-        btn.textContent = 'Pause';
       } else {
         audio.pause();
-        btn.textContent = 'Play';
       }
+      updateButton();
     });
 
-    // Fallback for autoplay if blocked
     window.addEventListener('load', () => {
-      audio.play().catch(() => {
+      audio.play().then(updateButton).catch(() => {
         document.addEventListener('click', () => {
-          audio.play();
+          audio.play().then(updateButton);
         }, { once: true });
       });
     });
-</script>
+  </script>
     
     <script>
         async function downloadReel() {
