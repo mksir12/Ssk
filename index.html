@@ -306,69 +306,71 @@
 
     <script>
         async function downloadReel() {
-            const urlInput = document.getElementById('reelUrl');
-            const loading = document.getElementById('loading');
-            const videoContainer = document.getElementById('videoContainer');
-            const errorMessage = document.getElementById('errorMessage');
-            const videoPlayer = document.getElementById('videoPlayer');
-            const downloadButton = document.getElementById('downloadButton');
-            const progressBar = document.getElementById('progressBar');
-            const progressValue = document.getElementById('progressValue');
-            const quality = document.getElementById('quality').value;
-            const format = document.getElementById('format').value;
+    const urlInput = document.getElementById('reelUrl');
+    const loading = document.getElementById('loading');
+    const videoContainer = document.getElementById('videoContainer');
+    const errorMessage = document.getElementById('errorMessage');
+    const videoPlayer = document.getElementById('videoPlayer');
+    const downloadButton = document.getElementById('downloadButton');
+    const progressBar = document.getElementById('progressBar');
+    const progressValue = document.getElementById('progressValue');
 
-            if (!urlInput.value) {
-                showError('Please enter a valid Instagram reel URL');
-                return;
+    if (!urlInput.value) {
+        showError('Please enter a valid Instagram reel URL');
+        return;
+    }
+
+    if (!isValidInstagramUrl(urlInput.value)) {
+        showError('Please enter a valid Instagram reel URL');
+        return;
+    }
+
+    // Reset and show loading state
+    loading.classList.remove('hide');
+    videoContainer.classList.add('hide');
+    errorMessage.classList.add('hide');
+    progressBar.classList.remove('hide');
+
+    try {
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            if (progress < 90) {
+                progress += Math.random() * 10;
+                progressValue.style.width = `${Math.min(progress, 90)}%`;
             }
+        }, 300);
 
-            if (!isValidInstagramUrl(urlInput.value)) {
-                showError('Please enter a valid Instagram reel URL');
-                return;
+        const apiUrl = `https://jerrycoder.oggyapi.workers.dev/insta?url=${encodeURIComponent(urlInput.value)}`;
+        const response = await fetch(apiUrl);
+        const json = await response.json();
+
+        clearInterval(progressInterval);
+        progressValue.style.width = '100%';
+
+        if (json.status && json.data && json.data.length > 0) {
+            const media = json.data[0];
+
+            if (media.type === 'video' || media.url.includes('.mp4')) {
+                videoPlayer.src = media.url;
+                videoPlayer.classList.remove('hide');
+                downloadButton.href = media.url;
+                downloadButton.download = `reel.mp4`;
+
+                setTimeout(() => {
+                    videoContainer.classList.remove('hide');
+                    progressBar.classList.add('hide');
+                }, 500);
+            } else {
+                showError('Media is an image, not a reel video.');
             }
-
-            // Reset and show loading state
-            loading.classList.remove('hide');
-            videoContainer.classList.add('hide');
-            errorMessage.classList.add('hide');
-            progressBar.classList.remove('hide');
-
-            try {
-                // Simulate progress
-                let progress = 0;
-                const progressInterval = setInterval(() => {
-                    if (progress < 90) {
-                        progress += Math.random() * 10;
-                        progressValue.style.width = `${Math.min(progress, 90)}%`;
-                    }
-                }, 300);
-
-                const apiUrl = `https://cors.karankingrider.workers.dev/?url=https://ytdl-amber.vercel.app/api/instagram?url=${encodeURIComponent(urlInput.value)}&quality=${quality}&format=${format}`;
-                const response = await fetch(apiUrl);
-                const data = await response.json();
-
-                clearInterval(progressInterval);
-                progressValue.style.width = '100%';
-
-                if (data.video_url) {
-                    videoPlayer.src = data.video_url;
-                    downloadButton.href = data.video_url;
-                    // Add video metadata if available
-                    if (data.title) {
-                        downloadButton.download = `${sanitizeFilename(data.title)}.${format}`;
-                    }
-                    setTimeout(() => {
-                        videoContainer.classList.remove('hide');
-                        progressBar.classList.add('hide');
-                    }, 500);
-                } else {
-                    showError('Could not fetch video URL. Please check the link and try again.');
-                }
-            } catch (error) {
-                showError('An error occurred while processing your request. Please try again.');
-            } finally {
-                loading.classList.add('hide');
-            }
+        } else {
+            showError('Invalid response or video not found.');
+        }
+    } catch (err) {
+        showError('Failed to fetch the reel. Please try again later.');
+    } finally {
+        loading.classList.add('hide');
+    }
         }
 
         function showError(message) {
