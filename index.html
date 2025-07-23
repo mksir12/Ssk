@@ -350,7 +350,7 @@
         if (json.status && json.data && json.data.length > 0) {
             const media = json.data[0];
 
-            if (media.type === 'video' || media.url.includes('.mp4')) {
+            if (media.type === 'image' || media.url.includes('.mp4')) {
                 videoPlayer.src = media.url;
                 videoPlayer.classList.remove('hide');
                 downloadButton.href = media.url;
