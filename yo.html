@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#FF0000" />
+  <meta name="theme-color" content="#2563EB" />
   <meta name="description" content="Download YouTube videos or audio in multiple qualities easily." />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -11,7 +11,9 @@
 
   <title>YouTube Downloader</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
   <style>
     .card { animation: slideIn 0.5s ease; }
     .btn { transition: transform .1s ease; }
@@ -20,22 +22,38 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    body {
+      overflow: hidden;
+      position: relative;
+    }
+
+    canvas#bg-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
   </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
-  <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md card">
+
+  <!-- Animated Background Canvas -->
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md card z-10 relative">
     <div class="mb-6 flex items-center justify-center">
-      <span class="material-icons text-blue-500 text-5xl">cloud_download</span>
+      <span class="material-icons text-blue-600 text-5xl">cloud_download</span>
       <h1 class="text-2xl font-bold text-gray-800 ml-2">YouTube Video Downloader</h1>
     </div>
 
     <form id="downloadForm" class="space-y-6" autocomplete="off">
-      <div class="border-b-2 border-gray-300 py-2 focus-within:border-blue-500 flex items-center">
+      <div class="border-b-2 border-gray-300 py-2 focus-within:border-blue-600 flex items-center">
         <span class="material-icons text-gray-500 mr-2">link</span>
         <input id="video_url" type="url" placeholder="Enter YouTube URL" required
                class="w-full text-gray-700 placeholder-gray-400 focus:text-gray-900 outline-none" />
       </div>
-      <div class="border-b-2 border-gray-300 py-2 focus-within:border-blue-500 flex items-center">
+      <div class="border-b-2 border-gray-300 py-2 focus-within:border-blue-600 flex items-center">
         <span class="material-icons text-gray-500 mr-2">folder</span>
         <input id="save_path" type="text" placeholder="Save Location" value="/storage/emulated/0/Download/JerryCoder" required
                class="w-full text-gray-700 placeholder-gray-400 focus:text-gray-900 outline-none" />
@@ -47,7 +65,7 @@
         <label><input type="radio" name="mediaType" value="audio"> Audio</label>
       </div>
 
-      <div id="qualityVideoDiv" class="border-b-2 border-gray-300 py-2 focus-within:border-blue-500 flex items-center">
+      <div id="qualityVideoDiv" class="border-b-2 border-gray-300 py-2 focus-within:border-blue-600 flex items-center">
         <span class="material-icons text-gray-500 mr-2">high_quality</span>
         <select id="qualityVideo" class="w-full text-gray-700 outline-none focus:outline-none">
           <option value="360">360p</option>
@@ -57,7 +75,7 @@
         </select>
       </div>
 
-      <div id="qualityAudioDiv" class="hidden border-b-2 border-gray-300 py-2 focus-within:border-blue-500 flex items-center">
+      <div id="qualityAudioDiv" class="hidden border-b-2 border-gray-300 py-2 focus-within:border-blue-600 flex items-center">
         <span class="material-icons text-gray-500 mr-2">equalizer</span>
         <select id="qualityAudio" class="w-full text-gray-700 outline-none focus:outline-none">
           <option value="64">64 kbps</option>
@@ -67,7 +85,7 @@
       </div>
 
       <div class="flex justify-center mt-6">
-        <button type="submit" class="bg-blue-500 text-white w-full py-3 rounded-lg shadow btn flex items-center justify-center hover:bg-blue-600">
+        <button type="submit" class="bg-blue-600 text-white w-full py-3 rounded-lg shadow btn flex items-center justify-center hover:bg-blue-700">
           <span class="material-icons mr-2">download</span> Fetch Formats
         </button>
       </div>
@@ -75,7 +93,7 @@
 
     <div id="progressContainer" class="mt-4 hidden">
       <div class="h-2 bg-gray-300 rounded-full overflow-hidden">
-        <div id="progressBar" class="h-2 bg-blue-500 w-0"></div>
+        <div id="progressBar" class="h-2 bg-blue-600 w-0"></div>
       </div>
     </div>
 
@@ -88,6 +106,50 @@
   </div>
 
 <script>
+  // Background Canvas Animation using Anime.js
+  const canvas = document.getElementById("bg-canvas");
+  const ctx = canvas.getContext("2d");
+  let width, height, circles = [];
+
+  function resizeCanvas() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+  }
+
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
+
+  for (let i = 0; i < 30; i++) {
+    circles.push({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      r: Math.random() * 6 + 4,
+      alpha: Math.random(),
+      dx: (Math.random() - 0.5) * 0.5,
+      dy: (Math.random() - 0.5) * 0.5
+    });
+  }
+
+  anime({
+    duration: Infinity,
+    update: function () {
+      ctx.clearRect(0, 0, width, height);
+      circles.forEach(c => {
+        c.x += c.dx;
+        c.y += c.dy;
+        if (c.x < 0 || c.x > width) c.dx *= -1;
+        if (c.y < 0 || c.y > height) c.dy *= -1;
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2, false);
+        ctx.fillStyle = `rgba(37, 99, 235, ${c.alpha})`; // blue-600 with alpha
+        ctx.fill();
+      });
+    }
+  });
+
+  // Form JS (unchanged)
   const mediaInputs = document.querySelectorAll('input[name="mediaType"]'),
         qualityVideoDiv = document.getElementById("qualityVideoDiv"),
         qualityAudioDiv = document.getElementById("qualityAudioDiv"),
