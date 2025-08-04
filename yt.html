@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YouTube Downloader</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <style>
+    .card { animation: slideIn 0.5s ease; }
+    .btn { transition: transform .1s ease; }
+    .btn:active { transform: scale(.95); }
+    @keyframes slideIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md card">
+    <div class="mb-6 flex items-center justify-center">
+      <span class="material-icons text-blue-500 text-5xl">cloud_download</span>
+      <h1 class="text-2xl font-bold text-gray-800 ml-2">YouTube Video Downloader</h1>
+    </div>
+
+    <form id="downloadForm" class="space-y-6" autocomplete="off">
+      <div class="border-b-2 border-gray-300 py-2 focus-within:border-blue-500 flex items-center">
+        <span class="material-icons text-gray-500 mr-2">link</span>
+        <input id="video_url" type="url" placeholder="Enter YouTube URL" required
+               class="w-full text-gray-700 placeholder-gray-400 focus:text-gray-900 outline-none" />
+      </div>
+      <div class="border-b-2 border-gray-300 py-2 focus-within:border-blue-500 flex items-center">
+        <span class="material-icons text-gray-500 mr-2">folder</span>
+        <input id="save_path" type="text" placeholder="Save Location" value="/storage/emulated/0/Download/Seal" required
+               class="w-full text-gray-700 placeholder-gray-400 focus:text-gray-900 outline-none" />
+      </div>
+
+      <div class="flex items-center gap-4">
+        <span class="material-icons text-gray-500">more_vert</span>
+        <label><input type="radio" name="mediaType" value="video" checked> Video</label>
+        <label><input type="radio" name="mediaType" value="audio"> Audio</label>
+      </div>
+
+      <div id="qualityVideoDiv" class="border-b-2 border-gray-300 py-2 focus-within:border-blue-500 flex items-center">
+        <span class="material-icons text-gray-500 mr-2">high_quality</span>
+        <select id="qualityVideo" class="w-full text-gray-700 outline-none focus:outline-none">
+          <option value="360">360p</option>
+          <option value="480">480p</option>
+          <option value="720" selected>720p</option>
+          <option value="1080">1080p</option>
+        </select>
+      </div>
+
+      <div id="qualityAudioDiv" class="hidden border-b-2 border-gray-300 py-2 focus-within:border-blue-500 flex items-center">
+        <span class="material-icons text-gray-500 mr-2">equalizer</span>
+        <select id="qualityAudio" class="w-full text-gray-700 outline-none focus:outline-none">
+          <option value="64">64 kbps</option>
+          <option value="128" selected>128 kbps</option>
+          <option value="192">192 kbps</option>
+        </select>
+      </div>
+
+      <div class="flex justify-center mt-6">
+        <button type="submit" class="bg-blue-500 text-white w-full py-3 rounded-lg shadow btn flex items-center justify-center hover:bg-blue-600">
+          <span class="material-icons mr-2">download</span> Fetch Formats
+        </button>
+      </div>
+    </form>
+
+    <div id="progressContainer" class="mt-4 hidden">
+      <div class="h-2 bg-gray-300 rounded-full overflow-hidden">
+        <div id="progressBar" class="h-2 bg-blue-500 w-0"></div>
+      </div>
+    </div>
+
+    <div id="result" class="mt-8 hidden">
+      <h3 class="text-lg font-semibold text-gray-800 mb-3">Select Download Option</h3>
+      <div id="thumb" class="mb-4 text-center"></div>
+      <div id="info" class="text-center font-semibold text-gray-700 mb-2"></div>
+      <div id="downloadSection" class="space-y-3"></div>
+    </div>
+  </div>
+
+<script>
+  const mediaInputs = document.querySelectorAll('input[name="mediaType"]'),
+        qualityVideoDiv = document.getElementById("qualityVideoDiv"),
+        qualityAudioDiv = document.getElementById("qualityAudioDiv"),
+        downloadForm = document.getElementById("downloadForm"),
+        progressContainer = document.getElementById("progressContainer"),
+        progressBar = document.getElementById("progressBar"),
+        result = document.getElementById("result"),
+        thumb = document.getElementById("thumb"),
+        info = document.getElementById("info"),
+        downloadSection = document.getElementById("downloadSection");
+
+  mediaInputs.forEach(inp => {
+    inp.addEventListener("change", () => {
+      if (inp.value === "video" && inp.checked) {
+        qualityVideoDiv.classList.remove("hidden");
+        qualityAudioDiv.classList.add("hidden");
+      } else {
+        qualityAudioDiv.classList.remove("hidden");
+        qualityVideoDiv.classList.add("hidden");
+      }
+    });
+  });
+
+  downloadForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    const videoUrl = document.getElementById("video_url").value.trim(),
+          mediaType = document.querySelector('input[name="mediaType"]:checked').value,
+          quality = mediaType === "video"
+                    ? document.getElementById("qualityVideo").value
+                    : document.getElementById("qualityAudio").value;
+
+    result.classList.add("hidden");
+    downloadSection.innerHTML = "";
+    thumb.innerHTML = "";
+    info.innerHTML = "";
+    progressBar.style.width = "0%";
+    progressContainer.classList.remove("hidden");
+
+    try {
+      const encodedUrl = encodeURIComponent(videoUrl);
+      progressBar.style.width = "20%";
+
+      let resp, data;
+      if (mediaType === "video") {
+        resp = await fetch(`https://jerrycoder.oggyapi.workers.dev/ytmp4?url=${encodedUrl}&quality=${quality}`);
+        data = await resp.json();
+      } else {
+        resp = await fetch(`https://jerrycoder.oggyapi.workers.dev/ytmp3?url=${encodedUrl}&quality=${quality}`);
+        data = await resp.json();
+      }
+      progressBar.style.width = "80%";
+
+      const videoId = videoUrl.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
+      if (videoId) {
+        const img = document.createElement("img");
+        img.src = `https://i.ytimg.com/vi/${videoId[1]}/hqdefault.jpg`;
+        img.className = "mx-auto rounded-lg mb-2";
+        thumb.appendChild(img);
+      }
+
+      let title = data.result?.title || data.title || "Untitled";
+      let duration = data.result?.duration || data.duration || "";
+
+      info.textContent = `${title} • ${duration}`;
+      progressBar.style.width = "100%";
+      progressContainer.classList.add("hidden");
+      result.classList.remove("hidden");
+
+      const url = data.result?.download_url || data.url;
+      const shownQuality = data.result?.quality || data.quality || quality;
+      const format = mediaType === "video" ? "MP4" : "MP3";
+      const label = `${shownQuality} - ${format} (${duration})`;
+
+      downloadSection.innerHTML = `
+        <label class="flex items-center bg-gray-50 rounded-lg p-3 shadow-sm hover:bg-blue-50">
+          <input type="radio" checked class="mr-3"/>
+          <span class="text-gray-700">${label}</span>
+        </label>
+        <div class="flex justify-center mt-2">
+          <a href="${url}" download target="_blank"
+             class="bg-green-500 text-white w-full py-3 rounded-lg shadow btn flex items-center justify-center hover:bg-green-600">
+            <span class="material-icons mr-2">file_download</span>
+            Download ${mediaType === "video" ? "Video" : "Audio"}
+          </a>
+        </div>`;
+    } catch (err) {
+      console.error(err);
+      progressContainer.classList.add("hidden");
+      result.classList.remove("hidden");
+      downloadSection.innerHTML = `<p class="text-red-600 font-semibold">Error fetching ${mediaType}.</p>`;
+    }
+  });
+</script>
+</body>
+</html>
