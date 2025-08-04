@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,236 +11,189 @@
 
   <title>YouTube Downloader</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' }
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
   <style>
+    body { position: relative; min-height: 100vh; margin: 0; overflow: auto; transition: background 1s ease; }
     .card { animation: slideIn 0.5s ease; }
     .btn { transition: transform .1s ease; }
     .btn:active { transform: scale(.95); }
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    body {
-      overflow: hidden;
-      position: relative;
-    }
-
-    canvas#bg-canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: -1;
-    }
+    @keyframes slideIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+    canvas#bg-canvas { position: fixed; top:0; left:0; width:100%; height:100%; z-index:-1; }
+    #themeToggle { position: fixed; top: 16px; right: 16px; z-index: 20; }
   </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
 
-  <!-- Animated Background Canvas -->
+  <!-- Animated gradient background -->
   <canvas id="bg-canvas"></canvas>
 
-  <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md card z-10 relative">
+  <!-- Theme Toggle Button -->
+  <button id="themeToggle" class="bg-white dark:bg-gray-700 text-gray-800 dark:text-white p-2 rounded shadow">
+    <span class="material-icons">brightness_6</span>
+  </button>
+
+  <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl max-w-md mx-auto mt-12 mb-12 card z-10">
     <div class="mb-6 flex items-center justify-center">
-      <span class="material-icons text-blue-600 text-5xl">cloud_download</span>
-      <h1 class="text-2xl font-bold text-gray-800 ml-2">YouTube Video Downloader</h1>
+      <span class="material-icons text-blue-600 dark:text-blue-400 text-5xl">cloud_download</span>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white ml-2">YouTube Video Downloader</h1>
     </div>
 
     <form id="downloadForm" class="space-y-6" autocomplete="off">
-      <div class="border-b-2 border-gray-300 py-2 focus-within:border-blue-600 flex items-center">
-        <span class="material-icons text-gray-500 mr-2">link</span>
+      <div class="border-b-2 border-gray-300 dark:border-gray-600 py-2 focus-within:border-blue-600 flex items-center">
+        <span class="material-icons text-gray-500">link</span>
         <input id="video_url" type="url" placeholder="Enter YouTube URL" required
-               class="w-full text-gray-700 placeholder-gray-400 focus:text-gray-900 outline-none" />
+               class="w-full bg-transparent outline-none text-gray-700 dark:text-gray-200 placeholder-gray-400" />
       </div>
-      <div class="border-b-2 border-gray-300 py-2 focus-within:border-blue-600 flex items-center">
-        <span class="material-icons text-gray-500 mr-2">folder</span>
-        <input id="save_path" type="text" placeholder="Save Location" value="/storage/emulated/0/Download/JerryCoder" required
-               class="w-full text-gray-700 placeholder-gray-400 focus:text-gray-900 outline-none" />
+      <div class="border-b-2 border-gray-300 dark:border-gray-600 py-2 focus-within:border-blue-600 flex items-center">
+        <span class="material-icons text-gray-500">folder</span>
+        <input id="save_path" type="text" placeholder="Save Location"
+               value="/storage/emulated/0/Download/JerryCoder" required
+               class="w-full bg-transparent outline-none text-gray-700 dark:text-gray-200 placeholder-gray-400" />
       </div>
 
-      <div class="flex items-center gap-4">
-        <span class="material-icons text-gray-500">more_vert</span>
+      <div class="flex gap-4 text-gray-700 dark:text-gray-300">
+        <span class="material-icons">more_vert</span>
         <label><input type="radio" name="mediaType" value="video" checked> Video</label>
         <label><input type="radio" name="mediaType" value="audio"> Audio</label>
       </div>
 
-      <div id="qualityVideoDiv" class="border-b-2 border-gray-300 py-2 focus-within:border-blue-600 flex items-center">
-        <span class="material-icons text-gray-500 mr-2">high_quality</span>
-        <select id="qualityVideo" class="w-full text-gray-700 outline-none focus:outline-none">
+      <div id="qualityVideoDiv" class="border-b-2 border-gray-300 dark:border-gray-600 py-2 focus-within:border-blue-600 flex items-center">
+        <span class="material-icons text-gray-500">high_quality</span>
+        <select id="qualityVideo" class="w-full bg-transparent outline-none text-gray-700 dark:text-gray-200">
           <option value="360">360p</option>
           <option value="480">480p</option>
           <option value="720" selected>720p</option>
           <option value="1080">1080p</option>
         </select>
       </div>
-
-      <div id="qualityAudioDiv" class="hidden border-b-2 border-gray-300 py-2 focus-within:border-blue-600 flex items-center">
-        <span class="material-icons text-gray-500 mr-2">equalizer</span>
-        <select id="qualityAudio" class="w-full text-gray-700 outline-none focus:outline-none">
+      <div id="qualityAudioDiv" class="hidden border-b-2 border-gray-300 dark:border-gray-600 py-2 focus-within:border-blue-600 flex items-center">
+        <span class="material-icons text-gray-500">equalizer</span>
+        <select id="qualityAudio" class="w-full bg-transparent outline-none text-gray-700 dark:text-gray-200">
           <option value="64">64 kbps</option>
           <option value="128" selected>128 kbps</option>
           <option value="192">192 kbps</option>
         </select>
       </div>
 
-      <div class="flex justify-center mt-6">
-        <button type="submit" class="bg-blue-600 text-white w-full py-3 rounded-lg shadow btn flex items-center justify-center hover:bg-blue-700">
-          <span class="material-icons mr-2">download</span> Fetch Formats
-        </button>
-      </div>
+      <button type="submit" class="bg-blue-600 text-white w-full py-3 rounded-lg shadow btn hover:bg-blue-700 flex items-center justify-center">
+        <span class="material-icons mr-2">download</span> Fetch Formats
+      </button>
     </form>
 
     <div id="progressContainer" class="mt-4 hidden">
-      <div class="h-2 bg-gray-300 rounded-full overflow-hidden">
+      <div class="h-2 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden">
         <div id="progressBar" class="h-2 bg-blue-600 w-0"></div>
       </div>
     </div>
 
     <div id="result" class="mt-8 hidden">
-      <h3 class="text-lg font-semibold text-gray-800 mb-3">Select Download Option</h3>
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">Select Download Option</h3>
       <div id="thumb" class="mb-4 text-center"></div>
-      <div id="info" class="text-center font-semibold text-gray-700 mb-2"></div>
-      <div id="downloadSection" class="space-y-3"></div>
+      <div id="info" class="text-center font-semibold text-gray-700 dark:text-gray-300 mb-2"></div>
+      <div id="downloadSection"></div>
     </div>
   </div>
 
 <script>
-  // Background Canvas Animation using Anime.js
-  const canvas = document.getElementById("bg-canvas");
-  const ctx = canvas.getContext("2d");
-  let width, height, circles = [];
-
-  function resizeCanvas() {
-    width = window.innerWidth;
-    height = window.innerHeight;
-    canvas.width = width;
-    canvas.height = height;
+  // background circles animation
+  const canvas = document.getElementById("bg-canvas"), ctx = canvas.getContext("2d");
+  let W, H, circles = [];
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
   }
-
-  window.addEventListener("resize", resizeCanvas);
-  resizeCanvas();
-
-  for (let i = 0; i < 30; i++) {
-    circles.push({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      r: Math.random() * 6 + 4,
-      alpha: Math.random(),
-      dx: (Math.random() - 0.5) * 0.5,
-      dy: (Math.random() - 0.5) * 0.5
+  window.addEventListener("resize", resize);
+  resize();
+  for (let i = 0; i < 40; i++) circles.push({ x: Math.random()*W, y: Math.random()*H, r: Math.random()*7+3, alpha: Math.random(), dx:(Math.random()-0.5)*0.7, dy:(Math.random()-0.5)*0.7 });
+  anime({ duration: Infinity, update: function(){
+    ctx.clearRect(0,0,W,H);
+    circles.forEach(c => {
+      c.x+=c.dx; c.y+=c.dy;
+      if(c.x<0||c.x>W) c.dx*=-1; if(c.y<0||c.y>H) c.dy*=-1;
+      ctx.beginPath(); ctx.arc(c.x,c.y,c.r,0,Math.PI*2);
+      ctx.fillStyle = `rgba(37,99,235,${c.alpha})`;
+      ctx.fill();
     });
-  }
+  }});
 
-  anime({
-    duration: Infinity,
-    update: function () {
-      ctx.clearRect(0, 0, width, height);
-      circles.forEach(c => {
-        c.x += c.dx;
-        c.y += c.dy;
-        if (c.x < 0 || c.x > width) c.dx *= -1;
-        if (c.y < 0 || c.y > height) c.dy *= -1;
-        ctx.beginPath();
-        ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2, false);
-        ctx.fillStyle = `rgba(37, 99, 235, ${c.alpha})`; // blue-600 with alpha
-        ctx.fill();
-      });
-    }
+  // scroll enabled
+
+  // dark/light toggle
+  const html = document.documentElement, toggle = document.getElementById("themeToggle");
+  const stored = localStorage.getItem("theme") || "light";
+  html.classList.toggle("dark", stored === "dark");
+  toggle.addEventListener("click", () => {
+    const isDark = html.classList.toggle("dark");
+    localStorage.setItem("theme", isDark ? "dark" : "light");
   });
 
-  // Form JS (unchanged)
-  const mediaInputs = document.querySelectorAll('input[name="mediaType"]'),
-        qualityVideoDiv = document.getElementById("qualityVideoDiv"),
-        qualityAudioDiv = document.getElementById("qualityAudioDiv"),
-        downloadForm = document.getElementById("downloadForm"),
-        progressContainer = document.getElementById("progressContainer"),
-        progressBar = document.getElementById("progressBar"),
-        result = document.getElementById("result"),
-        thumb = document.getElementById("thumb"),
-        info = document.getElementById("info"),
-        downloadSection = document.getElementById("downloadSection");
-
-  mediaInputs.forEach(inp => {
-    inp.addEventListener("change", () => {
-      if (inp.value === "video" && inp.checked) {
-        qualityVideoDiv.classList.remove("hidden");
-        qualityAudioDiv.classList.add("hidden");
-      } else {
-        qualityAudioDiv.classList.remove("hidden");
-        qualityVideoDiv.classList.add("hidden");
-      }
-    });
-  });
-
-  downloadForm.addEventListener("submit", async e => {
+  // form
+  const mediaInputs=document.querySelectorAll('input[name="mediaType"]'),
+        qV=document.getElementById('qualityVideoDiv'),
+        qA=document.getElementById('qualityAudioDiv'),
+        form=document.getElementById('downloadForm'),
+        progress=document.getElementById('progressContainer'),
+        bar=document.getElementById('progressBar'),
+        resultDiv=document.getElementById('result'),
+        thumb=document.getElementById('thumb'),
+        infoDiv=document.getElementById('info'),
+        dlSection=document.getElementById('downloadSection');
+  mediaInputs.forEach(i=>i.addEventListener('change',()=>{
+    if(i.checked && i.value==='video'){ qV.classList.remove('hidden'); qA.classList.add('hidden') }
+    else { qA.classList.remove('hidden'); qV.classList.add('hidden')}
+  }));
+  form.addEventListener('submit', async e=>{
     e.preventDefault();
-    const videoUrl = document.getElementById("video_url").value.trim(),
-          mediaType = document.querySelector('input[name="mediaType"]:checked').value,
-          quality = mediaType === "video"
-                    ? document.getElementById("qualityVideo").value
-                    : document.getElementById("qualityAudio").value;
-
-    result.classList.add("hidden");
-    downloadSection.innerHTML = "";
-    thumb.innerHTML = "";
-    info.innerHTML = "";
-    progressBar.style.width = "0%";
-    progressContainer.classList.remove("hidden");
-
+    const videoUrl=document.getElementById('video_url').value.trim(),
+          mediaType=document.querySelector('input[name="mediaType"]:checked').value,
+          quality = mediaType==='video' ? document.getElementById('qualityVideo').value
+                                       : document.getElementById('qualityAudio').value;
+    resultDiv.classList.add('hidden'); dlSection.innerHTML=''; thumb.innerHTML=''; infoDiv.innerHTML=''; bar.style.width='0%'; progress.classList.remove('hidden');
     try {
-      const encodedUrl = encodeURIComponent(videoUrl);
-      progressBar.style.width = "20%";
-
-      let resp, data;
-      if (mediaType === "video") {
-        resp = await fetch(`https://jerrycoder.oggyapi.workers.dev/ytmp4?url=${encodedUrl}&quality=${quality}`);
-        data = await resp.json();
-      } else {
-        resp = await fetch(`https://jerrycoder.oggyapi.workers.dev/ytmp3?url=${encodedUrl}&quality=${quality}`);
-        data = await resp.json();
+      const encoded = encodeURIComponent(videoUrl);
+      bar.style.width='20%';
+      let resp = await fetch(`https://jerrycoder.oggyapi.workers.dev/${mediaType==='video'?'ytmp4':'ytmp3'}?url=${encoded}&quality=${quality}`);
+      const data = await resp.json();
+      bar.style.width='80%';
+      const vidM = videoUrl.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
+      if(vidM) {
+        const img=document.createElement('img');
+        img.src=`https://i.ytimg.com/vi/${vidM[1]}/hqdefault.jpg`;
+        img.className='mx-auto rounded-lg mb-2'; thumb.appendChild(img);
       }
-      progressBar.style.width = "80%";
-
-      const videoIdMatch = videoUrl.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
-      if (videoIdMatch) {
-        const img = document.createElement("img");
-        img.src = `https://i.ytimg.com/vi/${videoIdMatch[1]}/hqdefault.jpg`;
-        img.className = "mx-auto rounded-lg mb-2";
-        thumb.appendChild(img);
-      }
-
-      let title = data.result?.title || data.title || "Untitled";
-      let duration = data.result?.duration || data.duration || "";
-      info.textContent = `${title} • ${duration}`;
-      progressBar.style.width = "100%";
-      progressContainer.classList.add("hidden");
-      result.classList.remove("hidden");
-
-      const url = data.result?.download_url || data.url;
-      const shownQuality = data.result?.quality || data.quality || quality;
-      const format = mediaType === "video" ? "MP4" : "MP3";
-      const label = `${shownQuality} - ${format} (${duration})`;
-
-      downloadSection.innerHTML = `
-        <label class="flex items-center bg-gray-50 rounded-lg p-3 shadow-sm hover:bg-blue-50">
+      let title=data.result?.title||data.title||'Untitled';
+      let duration=data.result?.duration||data.duration||'';
+      infoDiv.textContent=`${title} • ${duration}`;
+      bar.style.width='100%'; progress.classList.add('hidden'); resultDiv.classList.remove('hidden');
+      const url = data.result?.download_url||data.url;
+      const shownQ = data.result?.quality||data.quality||quality;
+      const fmt = mediaType==='video'?'MP4':'MP3';
+      const label=`${shownQ} - ${fmt} (${duration})`;
+      dlSection.innerHTML = `
+        <label class="flex items-center bg-gray-50 dark:bg-gray-700 rounded-lg p-3 shadow-sm hover:bg-blue-50">
           <input type="radio" checked class="mr-3"/>
-          <span class="text-gray-700">${label}</span>
+          <span class="text-gray-700 dark:text-gray-200">${label}</span>
         </label>
         <div class="flex justify-center mt-2">
           <a href="${url}" download target="_blank"
              class="bg-green-500 text-white w-full py-3 rounded-lg shadow btn flex items-center justify-center hover:bg-green-600">
             <span class="material-icons mr-2">file_download</span>
-            Download ${mediaType === "video" ? "Video" : "Audio"}
+            Download ${fmt}
           </a>
-        </div>`;
-    } catch (err) {
+        </div>`
+    } catch(err) {
       console.error(err);
-      progressContainer.classList.add("hidden");
-      result.classList.remove("hidden");
-      downloadSection.innerHTML = `<p class="text-red-600 font-semibold">Error fetching ${mediaType}.</p>`;
+      progress.classList.add('hidden');
+      resultDiv.classList.remove('hidden');
+      dlSection.innerHTML = `<p class="text-red-600 dark:text-red-400 font-semibold">Error fetching ${mediaType}.</p>`;
     }
   });
 </script>
+
 </body>
 </html>
